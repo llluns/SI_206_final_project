@@ -1,0 +1,141 @@
+import requests
+import json
+import tweepy 			# need to pip install tweepy
+import sqlite3
+
+
+import sqlite3
+from sqlite3 import Error
+ 
+ 
+
+def get_data():
+    response = requests.get("https://api.collegefootballdata.com/rankings?year=2019&seasonType=regular")
+
+    results = response.json()
+    #print(json.dumps(results))
+    return results
+
+def extract_info (results, week):
+    if week >=8 and week < 10:
+        week-8
+    elif week <=7 and week >=1:
+        week + 3
+    else:
+        week -1
+    week_data=results[week]
+    poll_data=week_data['polls']
+    data=[]
+    for i in range(0,len(poll_data)):
+        week_data=poll_data[i]
+        polldata=poll_data[i]
+        poll_name=polldata['poll']
+        for item in polldata["ranks"]:
+            conference = item["conference"]
+            rank = item["rank"]
+            votes = item["firstPlaceVotes"]
+            points = item["points"]
+            rank = item["rank"]
+            school = item["school"]
+            data.append((school,conference, rank))
+    return data
+
+
+def set_sports_db():
+    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/Sports.sqlite')
+    sports=conn.cursor() 
+    sports.execute('CREATE TABLE Conference (Team TEXT, Conference TEXT)')
+    sports.execute('CREATE TABLE Rank (Team TEXT, Rank TEXT)')
+
+def write_to_twitter_db(data, round=0): #num is what will restrict how much is written at a time
+    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/Sports.sqlite')
+    sports=conn.cursor() 
+    if round==0:
+        x=range(0,20)
+    if round==1:
+        x=range(20,40)
+    if round==2:
+        x=range(40,60)
+    if round ==3:
+        x=range(60,80)
+    if round ==4:
+        x=range(80,100)
+    for i in x: #enables rate limited which is dumb
+        info=data[i] 
+        school=info[0]
+        conf=info[1]
+        rank=info[2]
+        sports.execute('INSERT INTO Conference (Team, Conference) VALUES (?, ?)',(school, conf))
+        sports.execute('INSERT INTO Rank (Team, Rank) VALUES (?, ?)', (school, rank))
+
+
+def main():
+    yasss=get_data()
+    alldata=(extract_info(yasss, week=11))
+    set_sports_db()
+    write_to_twitter_db(alldata,0)
+    write_to_twitter_db(alldata,1)
+    write_to_twitter_db(alldata,2)
+    write_to_twitter_db(alldata,3)
+    write_to_twitter_db(alldata,4)
+
+main()
+
+
+
+
+
+# def jprint(obj):
+#     # create a formatted string of the Python JSON object
+#     text = json.dumps(obj, sort_keys=True, indent=4)
+#     print(text)
+
+#     return text
+
+
+
+# def extract_info(results):
+#     poll={}
+#     rank=[]
+#     extra={}
+#     for status in results['statuses']:
+#         tweet= status["text"]
+#         print(tweet)
+#         name= status['user']['name']
+#         username=status['user']["screen_name"]
+#         location=status['user']['location']
+#         followers=status['user']['followers_count']
+#         mutuals=status['user']['friends_count']
+#         when= status['created_at']
+#         coords=status['coordinates']
+#         geo=status['geo']
+#         words={}
+
+# def get_data_with_caching(country_code, year, per_page=50):
+
+#     api_c_code  = country_code      # country code (e.g. "USA", "USA;CAN")
+#     api_type    = "EN.ATM.CO2E.PC"  # CO2 emissions data (metric tons per capita)
+#     api_year    = year              # year (e.g. 2000)
+#     api_per_page= per_page          # maximum return items (the default value is 50)
+#     base_url    = "http://api.worldbank.org/v2/country/{}/indicator/{}?format=json&date={}&per_page={}"
+#     request_url = "https://api.collegefootballdata.com/rankings?year=2019&seasonType=regular"
+
+
+#     dir_path = os.path.dirname(os.path.realpath(__file__))
+#     CACHE_FNAME = dir_path + '/' + "cache_climate.json"
+#     CACHE_DICTION  = read_cache(CACHE_FNAME)
+
+#     if request_url in CACHE_DICTION:
+#         print("Using cache for " + country_code)
+#         return CACHE_DICTION[request_url]
+#     else:
+#         print("Fetching for " + country_code)
+#         print(request_url)
+#         try:
+#             data = requests.get(request_url).json()
+#             CACHE_DICTION[request_url] = data
+#             write_cache(CACHE_FNAME, CACHE_DICTION)
+#             return data
+#         except:
+#             print('Exception')
+#             return None
