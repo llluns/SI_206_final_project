@@ -365,6 +365,12 @@ def set_Table2():
             table2_data.append(x)
     return table2_data
 
+def find_conference(key):
+    data = set_Table2()
+    for value, school in data.keys():
+        if key == school:
+            return key
+        return "No Conference"
 
 def write_to_football_Table2():
     conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
@@ -436,15 +442,28 @@ def data_vis_Table1():
     plt.tight_layout()
     
 
+
+
+
 def main():
     #TWITTER 
-    query=("Umich")
+    try:
+        schools=list(get_avg_rates().keys())
+        print (schools)
+    print("Please type a school from the list above. Please make sure to match spelling and capitalization. ")
+    print("If no schools are printed, please run the code several more times to allow the database to update.")
+    query= input("Please enter school here: ")
     results=get_tweets(consumer_key,consumer_secret,access_token_secret,access_token, query)
     data=(extract_info(results))
     write_to_twitter_db(data)
     #FOOTBALL
     write_to_football_Table1()
     write_to_football_Table2()
+    #OUTPUT
+    school= NEED
+    conference=find_conference(query)
+    rank=  NEED
+    print("{} is in the {} conference and is ranked {}".format(school, conference, rank))
     #DISPLAY VISUALIZATOINS
     data_vis_Table1()
     plot_twitter_bar()
@@ -452,4 +471,4 @@ def main():
     #WRITE FILE
     write_to_file( "Twitter_results.csv" )
 
-main()
+print(schools)
