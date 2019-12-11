@@ -123,31 +123,6 @@ def extract_info_from_week():
     # print(giant_data)
     return giant_data
 
-# Setting up table
-
-def set_football_db_one():
-    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/collegefootball.sqlite')
-    football=conn.cursor() 
-    football.execute('DROP TABLE IF EXISTS Table1')
-    # football.execute('DROP TABLE IF EXISTS Table2')
-
-    football.execute('CREATE TABLE Table1 (id_name TEXT, school TEXT, rank INTEGER)')
-    # football.execute('CREATE TABLE Table2 (school TEXT, conference TEXT)')
-
-
-#Writing to Table 1
-
-def get_ids_from_Table2():
-    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/collegefootball.sqlite')
-    football=conn.cursor() 
-    football.execute('SELECT id_name FROM Table1')
-    currIds=[]      #fetch list of IDs
-    try:
-        for Id in football:
-            currIds.append(Id)
-    except:
-        pass
-    return currIds
 
 
 def write_to_football_Table1():
@@ -219,36 +194,7 @@ def get_avg_rates():
     return school_and_rank
 
 
-# def data_vis_Table1():
-#     data = get_avg_rates()
-#     ranks = list(data.values())
-#     schools = list(data.keys())
-#     lst=[]
-#     for i in range(0,len(ranks)):
-#         lst.append((schools[i],ranks[i]))
-#     sort=sorted(lst, key= lambda x: x[1], reverse=True)
-#     sorted_ranks=[]
-#     sorted_schools=[]
-#     for tup in sort:
-#         sorted_ranks.append(tup[1])
-#         sorted_schools.append(tup[0])
 
-
-#     fig = plt.figure()
-#     fig.subplots_adjust(top=0.8)
-#     ax1 = fig.add_subplot()
-
-
-#     plt.figure(1, figsize= (9, 3))
-#     plt.tight_layout()
-#     rainbow=["red","orange",'yellow','green','blue','purple']
-#     plt.barh(sorted_schools, sorted_ranks, color=rainbow)
-#     plt.suptitle('College Teams and Average Rankings in 2019')
-#     ax1.set_ylabel('College Teams')
-#     ax1.set_xlabel("Ranking")
-#     plt.show()
-#     plt.tight_layout()
-    
 
 def set_Table2():
     giantdata = extract_info_from_week()
@@ -327,7 +273,36 @@ def write_to_football_Table2():
 
 
 
+def data_vis_Table1():
+    data = get_avg_rates()
+    ranks = list(data.values())
+    schools = list(data.keys())
+    lst=[]
+    for i in range(0,len(ranks)):
+        lst.append((schools[i],ranks[i]))
+    sort=sorted(lst, key= lambda x: x[1], reverse=True)
+    sorted_ranks=[]
+    sorted_schools=[]
+    for tup in sort:
+        sorted_ranks.append(tup[1])
+        sorted_schools.append(tup[0])
 
+
+    fig = plt.figure()
+    fig.subplots_adjust(top=0.8)
+    ax1 = fig.add_subplot()
+
+
+    plt.figure(1, figsize= (9, 3))
+    plt.tight_layout()
+    rainbow=["red","orange",'yellow','green','blue','purple']
+    plt.barh(sorted_schools, sorted_ranks, color=rainbow)
+    plt.suptitle('College Teams and Average Rankings in 2019')
+    ax1.set_ylabel('College Teams')
+    ax1.set_xlabel("Ranking")
+    plt.show()
+    plt.tight_layout()
+    
 
 
 
@@ -343,10 +318,11 @@ def main():
     write_to_football_Table1()
     get_avg_rates()
     
-    # data_vis_Table1()
     set_Table2()
     write_to_football_Table2()
+    data_vis_Table1()
     print("______________________code end___________________")
 main()
+
 
 
