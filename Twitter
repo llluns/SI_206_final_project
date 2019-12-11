@@ -7,6 +7,8 @@ import os
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from wordcloud import WordCloud
+from PIL import Image
 
 # Fill these in in the twitter_info.py file
 consumer_key =  "51KkHDO8Ewqr6lIo5yQEP83Ro"
@@ -155,16 +157,32 @@ def plot_twitter_bar():
     plt.tight_layout()
     plt.axes(xlabel ='Word', ylabel="Frequency")
     plt.bar([1,2,3], freqs, color= ["pink", "gold", "deepskyblue"], tick_label=words)
-    plt.suptitle('Most Frequent Word & Their Sentiment Score')    
+    plt.suptitle('3 Most Frequent Words & Their Sentiment Scores')    
     for i in range(1,4):
             plt.text(i-.1, 1, scores[i-1] )
     plt.show()
     plt.xticks(rotation=90) 
     
 
-    pass
+def word_cloud_twitter():
+    filename="images.png"
+    root_path = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
+    data=get_top_words()
+    top=sorted(data, key=lambda x: x[2], reverse=True)
+    top3=top
+    words={}
+    for word in top3:
+        words[word[0]]=(word[2])
+    football_mask = np.array(Image.open(root_path))
 
-#COULD CREATE A WORD CLOUD HERE
+    wc = WordCloud(background_color="white", max_words=100, mask=football_mask)
+    # generate word cloud
+    wc.generate_from_frequencies(words)
+
+    # show
+    plt.imshow(wc, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()
 
 #writes the contents to a file
 def write_to_file(data, filename):
@@ -205,4 +223,8 @@ def test():
 
 #print(get_tweets(consumer_key,consumer_secret,access_token_secret,access_token, "University of Michigan"))
 
-plot_twitter_bar()
+#plot_twitter_bar()
+#print(analyze_twitter())
+
+
+word_cloud_twitter()
