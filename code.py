@@ -191,6 +191,8 @@ def word_cloud_twitter():
     plt.axis("off")
     plt.show()
 
+
+
 #writes the contents to a file
 def write_to_file(filename):
     col_names= ["Total Sentiment Score", "Follower Count", "Tweet"]
@@ -202,6 +204,8 @@ def write_to_file(filename):
     file.close()
     print('The data you have just saved to {} is: '.format(filename))
     print(analyze_twitter())
+
+
 
 
 def get_data():
@@ -349,6 +353,21 @@ def get_avg_rates():
 
     return school_and_rank
 
+
+#writes the contents to a file
+def write_to_file2(filename):
+    col_names= ["College Team", "Average Ranking"]
+    with open(filename, mode='w') as file:
+        f = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        f.writerow(col_names)
+    for line in get_avg_rates():
+            f.writerow(line)
+    file.close()
+    print('The data you have just saved to {} is: '.format(filename))
+
+
+
+
 def set_Table2():
     giantdata = extract_info_from_week()
     schools_and_conf = []
@@ -365,12 +384,31 @@ def set_Table2():
             table2_data.append(x)
     return table2_data
 
-def find_conference(key):
+
+
+def find_conference(input):
     data = set_Table2()
-    for value, school in data.keys():
-        if key == school:
-            return key
+    for i in data:
+        if i[1] == input:
+            return i[1]
         return "No Conference"
+
+
+
+def find_school(input):
+    data = set_Table2()
+    for i in data:
+        if i[0] == input:
+            return i[0]
+        return "School not Found"
+
+
+def find_avg_rank(input):
+    data = get_avg_rates()
+    for school, rank in data.items(): 
+        if rank == input: 
+            return input 
+        return "No rank data available"
 
 def write_to_football_Table2():
     conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
@@ -450,6 +488,8 @@ def main():
     try:
         schools=list(get_avg_rates().keys())
         print (schools)
+
+        
     print("Please type a school from the list above. Please make sure to match spelling and capitalization. ")
     print("If no schools are printed, please run the code several more times to allow the database to update.")
     query= input("Please enter school here: ")
@@ -460,9 +500,9 @@ def main():
     write_to_football_Table1()
     write_to_football_Table2()
     #OUTPUT
-    school= NEED
-    conference=find_conference(query)
-    rank=  NEED
+    school= find_school(query)
+    conference= find_conference(query)
+    rank=  find_avg_rank(query)
     print("{} is in the {} conference and is ranked {}".format(school, conference, rank))
     #DISPLAY VISUALIZATOINS
     data_vis_Table1()
@@ -470,5 +510,9 @@ def main():
     word_cloud_twitter()
     #WRITE FILE
     write_to_file( "Twitter_results.csv" )
+    write_to_file2( "Avg_Rankings.csv" )
+ 
 
 print(schools)
+
+
