@@ -27,6 +27,7 @@ def get_tweets(consumer_key,consumer_secret,access_token_secret,access_token, qu
     # Set up library to grab stuff from twitter with your authentication, and return it in a JSON format 
     api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
+    query=query+ " football"
     # a search example 
     results = api.search(q=query)
     contents= json.dumps(results)
@@ -36,16 +37,8 @@ def extract_info(results):
     data=[]
     for status in results['statuses']:
         tweet= status["text"]
-        print(tweet)
-        name= status['user']['name']
-        username=status['user']["screen_name"]
-        location=status['user']['location']
         followers=status['user']['followers_count']
-        mutuals=status['user']['friends_count']
-        when= status['created_at']
         tweet_id=status['id']
-        coords=status['coordinates']
-        geo=status['geo']
         d={'id':tweet_id,"followers":followers, "tweet": tweet}
         # output
         data.append(d)
@@ -57,14 +50,23 @@ def write_to_twitter_db(data, num=15): #num is what will restrict how much is wr
     twitter=conn.cursor() 
     twitter.execute('CREATE TABLE IF NOT EXISTS Tweets (Id INTEGER, Tweet TEXT)')
     twitter.execute('CREATE TABLE IF NOT EXISTS Followers (Id INTEGER, Followers INTEGER)')
-
+    existing=[]
+    try:
+        twitter.execute('SELECT Tweets.Id from Tweets')
+        for Id in twitter:
+            existing.append(Id)
+    except:
+        pass
     for i in range(0,num): #rate limited
         info=data[i]
         tweet_id=info['id']
         followers=info['followers']
         tweet=info['tweet']
-        twitter.execute('INSERT INTO Tweets (Id, Tweet) VALUES (?, ?)',(tweet_id, tweet))
-        twitter.execute('INSERT INTO Followers (Id, Followers) VALUES (?, ?)', (tweet_id, followers))
+        if tweet_id in existing:
+            pass
+        else:        
+            twitter.execute('INSERT INTO Tweets (Id, Tweet) VALUES (?, ?)',(tweet_id, tweet))
+            twitter.execute('INSERT INTO Followers (Id, Followers) VALUES (?, ?)', (tweet_id, followers))
     conn.commit()
 
 ###NEED TO FIGURE OUT HOW TO AVOID DUPLICATES 
@@ -202,8 +204,8 @@ def write_to_file(filename):
         for line in analyze_twitter():
             f.writerow(line)
     file.close()
-    print('The data you have just saved to {} is: '.format(filename))
-    print(analyze_twitter())
+    print('You have just saved twitter info to {}.'.format(filename))
+    #print(analyze_twitter())
 
 
 
@@ -227,7 +229,7 @@ def input_week(week):
     else:
         week = week
     #Checking and Showing which Weeks data we are looking at
-    print ("2019 College Football Rankings (Week:{})".format(input_week))
+    #print ("2019 College Football Rankings (Week:{})".format(input_week))
     return week
 
 def extract_info_from_week():
@@ -239,7 +241,7 @@ def extract_info_from_week():
 #Getting all the data within the polls part of the week
     all_poll_data=week_data['polls']
     num_of_polls_in_week = len(all_poll_data)
-    print("Polls:{}".format(num_of_polls_in_week))
+    #print("Polls:{}".format(num_of_polls_in_week))
     
     giant_data = []
     count = 0
@@ -336,7 +338,7 @@ def write_to_football_Table1():
             school=i[1]
             rank=i[2]
             football.execute('INSERT INTO Table1 (id_name, school, rank) VALUES (?, ?, ?)', (id_name, school, rank))
-    print("Currently there are {} items in Table1".format(itemsInDB +20))
+    #print("Currently there are {} items in Table1".format(itemsInDB +20))
 
     conn.commit()
     conn.close()
@@ -353,20 +355,28 @@ def get_avg_rates():
 
     return school_and_rank
 
-
+# def file2_data():
+#     conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
+#     football=conn.cursor() 
+#     results = football.execute("SELECT school, AVG(rank) FROM Table1 GROUP BY school")
+#     results = football.fetchall()
+#     data_list = []
+#     for item in results:
+#         data_list = (item[0]. item[1])
+#     return data_list
 #writes the contents to a file
+
 def write_to_file2(filename):
     col_names= ["College Team", "Average Ranking"]
     with open(filename, mode='w') as file:
         f = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         f.writerow(col_names)
-    for line in get_avg_rates():
+        for line in get_avg_rates():
             f.writerow(line)
     file.close()
-    print('The data you have just saved to {} is: '.format(filename))
+    print('You have just saved football data to {}. '.format(filename))
 
-
-
+    
 
 def set_Table2():
     giantdata = extract_info_from_week()
@@ -386,29 +396,36 @@ def set_Table2():
 
 
 
-def find_conference(input):
+def find_conference(inp):
     data = set_Table2()
+    conf=" "
     for i in data:
-        if i[1] == input:
-            return i[1]
-        return "No Conference"
+        if i[0] == inp:
+            conf+= i[1]
+        else:
+            pass
+    if len(conf)==1:
+        conf= "Conference Unavailable"
+    return conf
+    
 
-
-
-def find_school(input):
+def find_school(inp):
     data = set_Table2()
+    conf=" "
     for i in data:
-        if i[0] == input:
-            return i[0]
-        return "School not Found"
+        if i[0] == inp:
+            conf+= i[0]
+        else:
+            pass
+    if len(conf)==1:
+        conf= "Conference Unavailable"
+    return conf
 
-
-def find_avg_rank(input):
+def find_avg_rank(school):
     data = get_avg_rates()
-    for school, rank in data.items(): 
-        if rank == input: 
-            return input 
-        return "No rank data available"
+    x = data.get(school)
+    return x
+    
 
 def write_to_football_Table2():
     conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
@@ -444,7 +461,7 @@ def write_to_football_Table2():
             conference=i[1]
             football.execute('INSERT INTO Table2 (school, conference) VALUES (?, ?)', (school, conference))
 
-    print("Currently there are {} items in Table2".format(itemsInDB2 + 20))
+    #print("Currently there are {} items in Table2".format(itemsInDB2 + 20))
     conn.commit()
     conn.close()
 
@@ -479,18 +496,32 @@ def data_vis_Table1():
     plt.show()
     plt.tight_layout()
     
-
-
+def point_chart():
+    data= analyze_twitter()
+    score=[]
+    followers=[]
+    for line in data:
+        score.append(line[0])
+        followers.append(line[1])
+    plt.suptitle('Tweet Sentiment Score & Follower Count')
+    plt.axes(xlabel ='Users Follower Count', ylabel="Sentiment Score of Individual Tweet")
+    plt.scatter(followers, score, color="red")
+    
+    plt.show()
 
 
 def main():
     #TWITTER 
+    print("-----------------------------------------------------------------------------------------------------")  
+
     try:
         schools=list(get_avg_rates().keys())
         print (schools)
-
-        
-    print("Please type a school from the list above. Please make sure to match spelling and capitalization. ")
+    except:
+        pass 
+    print("-----------------------------------------------------------------------------------------------------")  
+    print("")
+    print( " Please type a school from the list above. Please make sure to match spelling and capitalization. ")
     print("If no schools are printed, please run the code several more times to allow the database to update.")
     query= input("Please enter school here: ")
     results=get_tweets(consumer_key,consumer_secret,access_token_secret,access_token, query)
@@ -503,16 +534,16 @@ def main():
     school= find_school(query)
     conference= find_conference(query)
     rank=  find_avg_rank(query)
+    print("--------------------------------------------RESULTS---------------------------------------------------------")  
+
     print("{} is in the {} conference and is ranked {}".format(school, conference, rank))
     #DISPLAY VISUALIZATOINS
     data_vis_Table1()
     plot_twitter_bar()
     word_cloud_twitter()
+    point_chart()
     #WRITE FILE
     write_to_file( "Twitter_results.csv" )
     write_to_file2( "Avg_Rankings.csv" )
  
-
-print(schools)
-
-
+main()
