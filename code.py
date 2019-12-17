@@ -46,7 +46,7 @@ def extract_info(results):
 
 
 def write_to_twitter_db(data, num=15): #num is what will restrict how much is written at a time
-    conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Twitter.db')
+    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/final_project.db')
     twitter=conn.cursor() 
     twitter.execute('CREATE TABLE IF NOT EXISTS Tweets (Id INTEGER, Tweet TEXT)')
     twitter.execute('CREATE TABLE IF NOT EXISTS Followers (Id INTEGER, Followers INTEGER)')
@@ -69,10 +69,9 @@ def write_to_twitter_db(data, num=15): #num is what will restrict how much is wr
             twitter.execute('INSERT INTO Followers (Id, Followers) VALUES (?, ?)', (tweet_id, followers))
     conn.commit()
 
-###NEED TO FIGURE OUT HOW TO AVOID DUPLICATES 
 
 def retrieve_tweets_from_db():
-    conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Twitter.db')
+    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/final_project.db')
     twitter=conn.cursor() 
     twitter.execute('SELECT Tweets.Id, Tweets.Tweet, Followers.Followers from Tweets INNER JOIN Followers ON Tweets.Id =Followers.Id')
     #twitter.execute('SELECT * from Tweets')
@@ -300,7 +299,7 @@ def extract_info_from_week():
 
 
 def write_to_football_Table1():
-    conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
+    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/final_project.db')
     football=conn.cursor() 
 
     giantdata = extract_info_from_week()
@@ -344,7 +343,7 @@ def write_to_football_Table1():
     conn.close()
 
 def get_avg_rates():
-    conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
+    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/final_project.db')
     football=conn.cursor() 
 
     results = football.execute("SELECT school, AVG(rank) FROM Table1 GROUP BY school")
@@ -355,16 +354,7 @@ def get_avg_rates():
 
     return school_and_rank
 
-# def file2_data():
-#     conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
-#     football=conn.cursor() 
-#     results = football.execute("SELECT school, AVG(rank) FROM Table1 GROUP BY school")
-#     results = football.fetchall()
-#     data_list = []
-#     for item in results:
-#         data_list = (item[0]. item[1])
-#     return data_list
-#writes the contents to a file
+
 
 def write_to_file2(filename):
     col_names= ["College Team", "Average Ranking"]
@@ -428,7 +418,7 @@ def find_avg_rank(school):
     
 
 def write_to_football_Table2():
-    conn=sqlite3.connect('/Users/Lauren/Desktop/FinalProject/Football.db')
+    conn=sqlite3.connect('/Users/shrinalipatel/Desktop/final_project.db')
     football=conn.cursor() 
     data_tups = set_Table2()
     football.execute('CREATE TABLE IF NOT EXISTS Table2 (school TEXT, conference TEXT)')
